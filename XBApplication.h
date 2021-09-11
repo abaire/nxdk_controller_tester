@@ -3,10 +3,11 @@
 
 #include <windows.h>
 
+#include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
+#include "XBGamepad.h"
 #include "XBRenderer.h"
 
 class CXBApplication {
@@ -22,15 +23,15 @@ class CXBApplication {
   virtual HRESULT Cleanup() { return S_OK; }
 
  private:
-  void OnControllerAdded_(const SDL_Event &event);
-  void OnControllerRemapped_(const SDL_Event &event);
-  void OnControllerRemoved_(const SDL_Event &event);
+  void OnControllerAdded_(const SDL_ControllerDeviceEvent &event);
+  void OnControllerRemapped_(const SDL_ControllerDeviceEvent &event);
+  void OnControllerRemoved_(const SDL_ControllerDeviceEvent &event);
 
  protected:
   std::string application_name_;
   XBRenderer renderer_;
 
-  std::vector<SDL_GameController *> gamepads_;
+  std::map<SDL_JoystickID, std::shared_ptr<CXBGamepad>> gamepads_;
 };
 
 #endif

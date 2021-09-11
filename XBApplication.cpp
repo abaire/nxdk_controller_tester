@@ -55,22 +55,30 @@ HRESULT CXBApplication::Create() {
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
         case SDL_CONTROLLERDEVICEADDED:
-          OnControllerAdded_(event);
+          OnControllerAdded_(event.cdevice);
           break;
 
         case SDL_CONTROLLERDEVICEREMAPPED:
-          OnControllerRemapped_(event);
+          OnControllerRemapped_(event.cdevice);
           break;
 
         case SDL_CONTROLLERDEVICEREMOVED:
-          OnControllerRemoved_(event);
+          OnControllerRemoved_(event.cdevice);
           break;
 
-        case SDL_CONTROLLERAXISMOTION:
+        case SDL_CONTROLLERAXISMOTION: {
+          auto it = gamepads_.find(event.caxis.which);
+          assert(it != gamepads_.end());
+          it->second->OnControllerAxisEvent(event.caxis);
+        } break;
+
         case SDL_CONTROLLERBUTTONDOWN:
-        case SDL_CONTROLLERBUTTONUP:
-          // TODO: Handle.
-          break;
+          // Fallthrough
+        case SDL_CONTROLLERBUTTONUP: {
+          auto it = gamepads_.find(event.cbutton.which);
+          assert(it != gamepads_.end());
+          it->second->OnControllerButtonEvent(event.cbutton);
+        } break;
 
         case SDL_WINDOWEVENT:
           // Ignore.
@@ -104,8 +112,6 @@ HRESULT CXBApplication::Create() {
       }
     }
 
-    // Parse input
-
     FrameMove();
     Render();
 
@@ -117,31 +123,33 @@ VOID CXBApplication::Destroy() {
   Cleanup();
 
   // Destroy input devices
-  for (auto &it : gamepads_) {
-    SDL_GameControllerClose(it);
-  }
   gamepads_.clear();
 }
 
-void CXBApplication::OnControllerAdded_(const SDL_Event &event) {
-  SDL_GameController *controller = SDL_GameControllerOpen(event.cdevice.which);
+void CXBApplication::OnControllerAdded_(
+    const SDL_ControllerDeviceEvent &event) {
+  SDL_GameController *controller = SDL_GameControllerOpen(event.which);
   if (!controller) {
     ErrorPrintSDLError("Failed to handle controller add event.");
     return;
   }
 
-  gamepads_.push_back(controller);
+  SDL_JoystickID id =
+      SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller));
+  gamepads_[id] = std::make_shared<CXBGamepad>(controller);
 }
 
-void CXBApplication::OnControllerRemapped_(const SDL_Event &event) {
+void CXBApplication::OnControllerRemapped_(
+    const SDL_ControllerDeviceEvent &event) {
   DbgPrint("Ignoring SDL_CONTROLLERDEVICEREMAPPED event for device %d",
-           event.cdevice.which);
+           event.which);
 }
 
-void CXBApplication::OnControllerRemoved_(const SDL_Event &event) {
+void CXBApplication::OnControllerRemoved_(
+    const SDL_ControllerDeviceEvent &event) {
   SDL_GameController *controller =
-      SDL_GameControllerFromInstanceID(event.cdevice.which);
-
-  auto _new_end = std::remove(gamepads_.begin(), gamepads_.end(), controller);
+      SDL_GameControllerFromInstanceID(event.which);
   SDL_GameControllerClose(controller);
+
+  gamepads_.erase(event.which);
 }
