@@ -35,6 +35,14 @@ HRESULT CXBApplication::Create() {
 
   renderer_.Init(application_name_.c_str());
 
+  float overscan_x = static_cast<float>(renderer_.GetWidth()) * 0.05f;
+  float overscan_y = static_cast<float>(renderer_.GetHeight()) * 0.05f;
+
+  safe_area_.x = static_cast<int>(overscan_x);
+  safe_area_.y = static_cast<int>(overscan_y);
+  safe_area_.w = renderer_.GetWidth() - safe_area_.x;
+  safe_area_.h = renderer_.GetHeight() - safe_area_.y;
+
   int init_status = SDL_Init(SDL_INIT_GAMECONTROLLER);
   if (init_status) {
     DbgPrint("Failed to initialize GAMECONTROLLER: %s", SDL_GetError());

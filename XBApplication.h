@@ -32,6 +32,9 @@ class CXBApplication {
   std::string application_name_;
   XBRenderer renderer_;
 
+  // Region of the screen that is actually viewable.
+  SDL_Rect safe_area_{0, 0, 0, 0};
+
   std::map<SDL_JoystickID, std::shared_ptr<CXBGamepad>> gamepads_;
 };
 

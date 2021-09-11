@@ -31,4 +31,4 @@ for instructions on enabling project-local `.gdbinit` parsing.
 
 ## Resources
 
-The X360 font comes from https://fontmeme.com/xbox-360-font/
+The X360 font_ comes from https://fontmeme.com/xbox-360-font_/

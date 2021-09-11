@@ -13,7 +13,7 @@ inline void ErrorPrintLastError(LPCSTR message, VarArgs &&...args) {
   std::string buf;
   buf.resize(string_length);
 
-  snprintf(&buf[0], string_length, message, args...);
+  snprintf(&buf[0], string_length + 1, message, args...);
   ErrorPrintLastError(buf.c_str());
 }
 
@@ -28,7 +28,7 @@ inline void ErrorPrintSDLError(LPCSTR message, VarArgs &&...args) {
   std::string buf;
   buf.resize(string_length);
 
-  snprintf(&buf[0], string_length, message, args...);
+  snprintf(&buf[0], string_length + 1, message, args...);
   ErrorPrintSDLError(buf.c_str());
 }
 
