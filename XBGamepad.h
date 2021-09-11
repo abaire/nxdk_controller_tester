@@ -10,11 +10,15 @@
 // Returns a bitvector of the buttons that have changed since the last poll.
 #define ChangedButtons(device_status) (device_status & 0xFFFF)
 
-#define SetAxisChanged(device_status, axis) (device_status |= (1 << (static_cast<DWORD>(axis) + 16)))
-#define GetAxisChanged(device_status, axis) ((device_status & (1 << (static_cast<DWORD>(axis) + 16))) != 0)
+#define SetAxisChanged(device_status, axis) \
+  (device_status |= (1 << (static_cast<DWORD>(axis) + 16)))
+#define GetAxisChanged(device_status, axis) \
+  ((device_status & (1 << (static_cast<DWORD>(axis) + 16))) != 0)
 
-#define SetButtonChanged(device_status, button) (device_status |= (1 << static_cast<DWORD>(button)))
-#define GetButtonChanged(device_status, button) ((device_status & (1 << static_cast<DWORD>(button))) != 0)
+#define SetButtonChanged(device_status, button) \
+  (device_status |= (1 << static_cast<DWORD>(button)))
+#define GetButtonChanged(device_status, button) \
+  ((device_status & (1 << static_cast<DWORD>(button))) != 0)
 
 class CXBGamepad {
  public:
@@ -47,6 +51,12 @@ class CXBGamepad {
 
   [[nodiscard]] inline Uint8 GetButton(SDL_GameControllerButton button) const {
     return buttons_[button];
+  }
+
+  inline BOOL Rumble(Uint16 left_low_freq_rumble, Uint16 right_high_freq_rumble,
+                     Uint32 duration_ms) const {
+    return SDL_GameControllerRumble(handle_, left_low_freq_rumble,
+                                    right_high_freq_rumble, duration_ms) == 0;
   }
 
   void OnControllerAxisEvent(const SDL_ControllerAxisEvent &event);

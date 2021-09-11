@@ -76,9 +76,11 @@ HRESULT ControllerTester::Render() {
                          gamepad.GetButton(SDL_CONTROLLER_BUTTON_Y));
     y += line.h;
 
-    line = font_.DrawFmt(box.x, y, "White: %d  Black: %d",
+    line = font_.DrawFmt(box.x, y, "White: %d  Black: %d L: %d R: %d",
                          gamepad.GetButton(SDL_CONTROLLER_BUTTON_LEFTSHOULDER),
-                         gamepad.GetButton(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER));
+                         gamepad.GetButton(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER),
+                         gamepad.GetButton(SDL_CONTROLLER_BUTTON_LEFTSTICK),
+                         gamepad.GetButton(SDL_CONTROLLER_BUTTON_RIGHTSTICK));
     y += line.h;
 
     line = font_.DrawFmt(box.x, y, "Back: %d  Start: %d",
@@ -86,6 +88,16 @@ HRESULT ControllerTester::Render() {
                          gamepad.GetButton(SDL_CONTROLLER_BUTTON_START));
     y += line.h;
 
+    // Rumble based on the trigger states if Start and A are both pushed.
+    if (gamepad.GetButton(SDL_CONTROLLER_BUTTON_BACK) &&
+        gamepad.GetButton(SDL_CONTROLLER_BUTTON_A)) {
+      auto left_trigger = static_cast<Uint16>(gamepad.GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT));
+      auto right_trigger = static_cast<Uint16>(gamepad.GetAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+      Uint16 left_rumble = left_trigger << 1;
+      Uint16 right_rumble = right_trigger << 1;
+
+      gamepad.Rumble(left_rumble, right_rumble, 16);
+    }
   }
 
   return S_OK;
