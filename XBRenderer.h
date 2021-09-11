@@ -3,8 +3,9 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <vector>
 #include <xboxkrnl/xboxkrnl.h>
+
+#include <vector>
 
 class XBRenderer {
  public:
@@ -16,7 +17,7 @@ class XBRenderer {
 
   int Clear();
 
-  void Flip();
+  void Flip(BOOL vsync);
 
   SDL_Renderer *GetRenderer() { return renderer_; }
 
@@ -24,8 +25,9 @@ class XBRenderer {
 
   int GetHeight() const { return height_; }
 
-  int SetDrawColor(uint8_t r = 0x40, uint8_t g = 0x40, uint8_t b = 0xE0,
-                   uint8_t a = 0x00);
+  int SetDrawColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF);
+
+  int FillRect(const SDL_Rect &rect);
 
   void DrawTexture(SDL_Texture *tex, SDL_Rect &src, SDL_Rect &dst);
 
@@ -56,4 +58,4 @@ class XBRenderer {
   size_t upper_half_ = 0;
 };
 
-#endif // _XBRENDERER_H__
+#endif  // _XBRENDERER_H__

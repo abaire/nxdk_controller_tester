@@ -10,7 +10,14 @@ HRESULT ControllerTester::FrameMove() {
     }
   }
 
-  return CXBApplication::FrameMove();
+  return S_OK;
 }
-HRESULT ControllerTester::Render() { return CXBApplication::Render(); }
+HRESULT ControllerTester::Render() {
+
+  renderer_.SetDrawColor(0x3C, 0x00, 0x3C);
+  renderer_.Clear();
+
+  return S_OK;
+}
+
 HRESULT ControllerTester::Cleanup() { return CXBApplication::Cleanup(); }

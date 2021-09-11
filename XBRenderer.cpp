@@ -44,7 +44,7 @@ int XBRenderer::Init(LPCSTR title) {
     return 2;
   }
   SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
-  SetDrawColor();
+  SetDrawColor(0x00, 0x00, 0x00);
   Clear();
   return 0;
 }
@@ -54,18 +54,22 @@ int XBRenderer::Clear() {
   return ret;
 }
 
-void XBRenderer::Flip() {
-  SetDrawColor(0, 0, 0, 0xFF);
-  SDL_RenderDrawRect(renderer_, nullptr);
-  SetDrawColor();
-  SDL_RenderPresent(renderer_);
+void XBRenderer::Flip(BOOL vsync) {
 #ifdef NXDK
-  XVideoWaitForVBlank();
+  if (vsync) {
+    XVideoWaitForVBlank();
+  }
 #endif
+
+  SDL_RenderPresent(renderer_);
 }
 
 int XBRenderer::SetDrawColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
   return SDL_SetRenderDrawColor(renderer_, r, g, b, a);
+}
+
+int XBRenderer::FillRect(const SDL_Rect &rect) {
+  return SDL_RenderFillRect(renderer_, &rect);
 }
 
 void XBRenderer::DrawTexture(SDL_Texture *tex, SDL_Rect &src, SDL_Rect &dst) {

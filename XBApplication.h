@@ -28,6 +28,7 @@ class CXBApplication {
   void OnControllerRemoved_(const SDL_ControllerDeviceEvent &event);
 
  protected:
+  BOOL vsync_{TRUE};
   std::string application_name_;
   XBRenderer renderer_;
 

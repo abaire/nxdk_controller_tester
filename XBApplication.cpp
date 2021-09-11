@@ -49,6 +49,15 @@ HRESULT CXBApplication::Create() {
   return S_OK;
 }
 
+VOID CXBApplication::Destroy() {
+  Cleanup();
+
+  // Destroy input devices
+  gamepads_.clear();
+
+  SDL_Quit();
+}
+
 [[noreturn]] INT CXBApplication::Run() {
   while (true) {
     SDL_Event event;
@@ -113,17 +122,11 @@ HRESULT CXBApplication::Create() {
     }
 
     FrameMove();
+
     Render();
 
-    renderer_.Flip();
+    renderer_.Flip(vsync_);
   }
-}
-
-VOID CXBApplication::Destroy() {
-  Cleanup();
-
-  // Destroy input devices
-  gamepads_.clear();
 }
 
 void CXBApplication::OnControllerAdded_(
