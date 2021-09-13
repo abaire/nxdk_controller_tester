@@ -7,7 +7,7 @@
 
 VOID __cdecl main() {
   DWORD launchDataType = LaunchDataPage->Header.dwLaunchDataType;
-  PRINTMSG(("LaunchD data type: 0x%X", launchDataType));
+  PRINTMSG(("Launch data type: 0x%X", launchDataType));
 
   //  LaunchDataPage->LaunchData
 //  XGetLaunchInfo
@@ -20,4 +20,10 @@ VOID __cdecl main() {
   }
 
   app.Run();
+
+
+  // Reboot
+//  LD_LAUNCH_DASHBOARD LaunchData = { XLD_LAUNCH_DASHBOARD_MAIN_MENU };
+//  DWORD retVal = XLaunchNewImage( NULL, (LAUNCH_DATA*)&LaunchData );
+
 }
