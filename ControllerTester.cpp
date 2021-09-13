@@ -1,5 +1,7 @@
 #include "ControllerTester.h"
 
+#include "DebugOutput.h"
+
 HRESULT ControllerTester::Initialize() {
   HRESULT status = font_.Create(&renderer_, R"(A:\resources\fonts\X360.ttf)");
   assert(SUCCEEDED(status) && "Failed to load font_.");
@@ -12,7 +14,7 @@ HRESULT ControllerTester::FrameMove() {
     auto &gamepad = *it.second;
     if (gamepad.Poll()) {
       int player_index = gamepad.GetPlayerIndex();
-      DbgPrint("Input from player %d", player_index);
+      PRINTMSG(("Input from player %d", player_index));
     }
   }
 
@@ -36,7 +38,7 @@ HRESULT ControllerTester::Render() {
     auto &gamepad = *it.second;
     int player_index = gamepad.GetPlayerIndex();
     if (player_index > 3) {
-      DbgPrint("Found unexpected player index %d", player_index);
+      PRINTMSG(("Found unexpected player index %d", player_index));
       font_.DrawFmt(safe_area_.x, safe_area_.y + safe_area_.h,
                     "Found unexpected player index %d", player_index);
       continue;
@@ -91,8 +93,10 @@ HRESULT ControllerTester::Render() {
     // Rumble based on the trigger states if Start and A are both pushed.
     if (gamepad.GetButton(SDL_CONTROLLER_BUTTON_BACK) &&
         gamepad.GetButton(SDL_CONTROLLER_BUTTON_A)) {
-      auto left_trigger = static_cast<Uint16>(gamepad.GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT));
-      auto right_trigger = static_cast<Uint16>(gamepad.GetAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+      auto left_trigger =
+          static_cast<Uint16>(gamepad.GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT));
+      auto right_trigger = static_cast<Uint16>(
+          gamepad.GetAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
       Uint16 left_rumble = left_trigger << 1;
       Uint16 right_rumble = right_trigger << 1;
 

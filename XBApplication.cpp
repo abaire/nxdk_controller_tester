@@ -9,7 +9,7 @@
 // Mounts the path containing this xbe as "A:".
 static BOOL MountDiskA() {
   if (nxIsDriveMounted('A')) {
-    DbgPrint("A: already mounted!");
+    PRINTMSG(("A: already mounted!"));
     return FALSE;
   }
 
@@ -28,7 +28,7 @@ static BOOL MountDiskA() {
 HRESULT CXBApplication::Create() {
   if (!nxIsDriveMounted('A')) {
     if (!MountDiskA()) {
-      DbgPrint("Failed to mount A:");
+      PRINTMSG(("Failed to mount A:"));
       return E_FAIL;
     }
   }
@@ -45,7 +45,7 @@ HRESULT CXBApplication::Create() {
 
   int init_status = SDL_Init(SDL_INIT_GAMECONTROLLER);
   if (init_status) {
-    DbgPrint("Failed to initialize GAMECONTROLLER: %s", SDL_GetError());
+    PRINTMSG(("Failed to initialize GAMECONTROLLER: %s", SDL_GetError()));
     return E_FAIL;
   }
 
@@ -124,8 +124,8 @@ VOID CXBApplication::Destroy() {
           break;
 
         default:
-          DbgPrint("Ignoring SDL event of type %d [0x%x]", event.type,
-                   event.type);
+          PRINTMSG(("Ignoring SDL event of type %d [0x%x]", event.type,
+                   event.type));
       }
     }
 
@@ -152,8 +152,8 @@ void CXBApplication::OnControllerAdded_(
 
 void CXBApplication::OnControllerRemapped_(
     const SDL_ControllerDeviceEvent &event) {
-  DbgPrint("Ignoring SDL_CONTROLLERDEVICEREMAPPED event for device %d",
-           event.which);
+  PRINTMSG(("Ignoring SDL_CONTROLLERDEVICEREMAPPED event for device %d",
+           event.which));
 }
 
 void CXBApplication::OnControllerRemoved_(
@@ -163,4 +163,32 @@ void CXBApplication::OnControllerRemoved_(
   SDL_GameControllerClose(controller);
 
   gamepads_.erase(event.which);
+}
+
+BOOL CXBApplication::SetBestVideoMode(CXBApplication::ColorDepth bpp,
+                                      int max_height, int max_width) {
+  void *vmode_context = nullptr;
+  VIDEO_MODE vmode;
+  VIDEO_MODE best_mode;
+  best_mode.height = -1;
+
+  while (XVideoListModes(&vmode, bpp, REFRESH_DEFAULT, &vmode_context)) {
+    if (vmode.height > max_height || vmode.width > max_width) {
+      continue;
+    }
+
+    if (vmode.height > best_mode.height ||
+        (vmode.width > best_mode.width && vmode.height == best_mode.height)) {
+      best_mode = vmode;
+    }
+  }
+
+  if (best_mode.height <= 0) {
+    return FALSE;
+  }
+
+  BOOL status = XVideoSetMode(best_mode.width, best_mode.height, best_mode.bpp,
+                              best_mode.refresh);
+
+  return status;
 }

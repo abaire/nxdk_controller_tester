@@ -1,6 +1,7 @@
 #ifndef _XB_APPLICATION_H__
 #define _XB_APPLICATION_H__
 
+#include <hal/video.h>
 #include <windows.h>
 
 #include <map>
@@ -12,9 +13,22 @@
 
 class CXBApplication {
  public:
+  static const int AnyHeight = 0x7FFF;
+  static const int AnyWidth = 0x7FFF;
+  typedef enum {
+    BPP_15 = 15,
+    BPP_16 = 16,
+    BPP_32 = 32,
+  } ColorDepth;
+
+ public:
   HRESULT Create();
   [[noreturn]] INT Run();
   VOID Destroy();
+
+  static BOOL SetBestVideoMode(ColorDepth bpp = BPP_32,
+                               int max_height = AnyHeight,
+                               int max_width = AnyWidth);
 
  protected:
   virtual HRESULT Initialize() { return S_OK; }
