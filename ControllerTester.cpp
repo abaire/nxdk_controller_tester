@@ -10,8 +10,7 @@ HRESULT ControllerTester::Initialize() {
 }
 
 HRESULT ControllerTester::FrameMove() {
-  for (auto &it : gamepads_) {
-    auto &gamepad = *it.second;
+  for (auto &gamepad : gamepads_) {
     if (gamepad.Poll()) {
       int player_index = gamepad.GetPlayerIndex();
       PRINTMSG(("Input from player %d", player_index));
@@ -34,8 +33,11 @@ HRESULT ControllerTester::Render() {
       {safe_area_.x + half_width, safe_area_.y + half_height, half_width,
        half_height}};
 
-  for (auto &it : gamepads_) {
-    auto &gamepad = *it.second;
+  for (auto &gamepad : gamepads_) {
+    if (!gamepad.IsConnected()) {
+      continue;
+    }
+
     int player_index = gamepad.GetPlayerIndex();
     if (player_index > 3) {
       PRINTMSG(("Found unexpected player index %d", player_index));

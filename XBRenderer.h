@@ -44,6 +44,9 @@ class XBRenderer {
   }
 
  private:
+  void UpdateFromCurrentVideoMode();
+
+ private:
   SDL_Renderer *renderer_ = nullptr;
   SDL_Window *window_ = nullptr;
   Uint32 render_flags_ = 0;

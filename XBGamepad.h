@@ -10,29 +10,30 @@
 // Returns a bitvector of the buttons that have changed since the last poll.
 #define ChangedButtons(device_status) (device_status & 0xFFFF)
 
-#define SetAxisChanged(device_status, axis) \
-  (device_status |= (1 << (static_cast<DWORD>(axis) + 16)))
 #define GetAxisChanged(device_status, axis) \
   ((device_status & (1 << (static_cast<DWORD>(axis) + 16))) != 0)
-
-#define SetButtonChanged(device_status, button) \
-  (device_status |= (1 << static_cast<DWORD>(button)))
 #define GetButtonChanged(device_status, button) \
   ((device_status & (1 << static_cast<DWORD>(button))) != 0)
 
+#define SDL_CONTROLLER_BUTTON_WHITE SDL_CONTROLLER_BUTTON_LEFTSHOULDER
+#define SDL_CONTROLLER_BUTTON_BLACK SDL_CONTROLLER_BUTTON_RIGHTSHOULDER
+
 class CXBGamepad {
- public:
-  typedef DWORD DeviceStatus;
 
  public:
-  explicit CXBGamepad(SDL_GameController *handle);
+  void LinkDevice(SDL_GameController *handle);
 
-  ~CXBGamepad();
+  void UnlinkDevice();
+
+  [[nodiscard]] inline SDL_JoystickID GetID() const { return id_; }
 
   // Returns whether or not the device is changed and clears the changed state.
   // The result is a bitvector containing the buttons and axes, which can be
   // extracted via the ChangedAxes and ChangedButtons macros.
-  DeviceStatus Poll();
+  Uint32 Poll();
+
+
+  [[nodiscard]] inline BOOL IsConnected() const { return connected_; }
 
   [[nodiscard]] inline BOOL IsChanged() const { return state_changed_ != 0; }
 
@@ -63,8 +64,10 @@ class CXBGamepad {
   void OnControllerButtonEvent(const SDL_ControllerButtonEvent &event);
 
  private:
-  DeviceStatus state_changed_;
-  SDL_GameController *handle_;
+  SDL_JoystickID id_{-1};
+  BOOL connected_{FALSE};
+  Uint32 state_changed_{0};
+  SDL_GameController *handle_{nullptr};
 
   Sint16 deadzones_[SDL_CONTROLLER_AXIS_MAX]{0};
   Sint16 axes_[SDL_CONTROLLER_AXIS_MAX]{0};

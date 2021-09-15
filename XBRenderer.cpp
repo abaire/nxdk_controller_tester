@@ -1,19 +1,24 @@
 #include "XBRenderer.h"
 
 #include <SDL_image.h>
-#include <algorithm>
-#include <cmath>
 #include <hal/debug.h>
 #include <hal/video.h>
+
+#include <algorithm>
+#include <cmath>
 
 // One line of text with the default font_ is 31 pixels high.
 // FIXME: Should probably be dynamic and dependent of font_ settings.
 static const unsigned int FONT_TEX_SIZE = 31;
 
-XBRenderer::XBRenderer() {
+void XBRenderer::UpdateFromCurrentVideoMode() {
   VIDEO_MODE xmode = XVideoGetMode();
   height_ = xmode.height;
   width_ = xmode.width;
+}
+
+XBRenderer::XBRenderer() {
+  UpdateFromCurrentVideoMode();
   window_flags_ = SDL_WINDOW_SHOWN;
 
   overscan_comp_x_ = static_cast<int>(width_ * 0.075);
@@ -33,19 +38,31 @@ XBRenderer::~XBRenderer() {
 }
 
 int XBRenderer::Init(LPCSTR title) {
+  if (!width_ || !height_) {
+    UpdateFromCurrentVideoMode();
+    assert(width_ > 0);
+    assert(height_ > 0);
+    if (!width_ || !height_) {
+      return -1;
+    }
+  }
+
   window_ =
-      SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED,
-                       SDL_WINDOWPOS_UNDEFINED, width_, height_, window_flags_);
+      SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                       width_, height_, window_flags_);
   if (window_ == nullptr) {
     return 1;
   }
+
   renderer_ = SDL_CreateRenderer(window_, -1, render_flags_);
   if (renderer_ == nullptr) {
     return 2;
   }
+
   SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
   SetDrawColor(0x00, 0x00, 0x00);
   Clear();
+
   return 0;
 }
 

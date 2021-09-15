@@ -61,7 +61,9 @@ VOID CXBApplication::Destroy() {
   Cleanup();
 
   // Destroy input devices
-  gamepads_.clear();
+  for (auto &gamepad : gamepads_) {
+    gamepad.UnlinkDevice();
+  }
 
   SDL_Quit();
 }
@@ -84,17 +86,25 @@ VOID CXBApplication::Destroy() {
           break;
 
         case SDL_CONTROLLERAXISMOTION: {
-          auto it = gamepads_.find(event.caxis.which);
-          assert(it != gamepads_.end());
-          it->second->OnControllerAxisEvent(event.caxis);
+          for (auto &gamepad : gamepads_) {
+            if (gamepad.GetID() == event.caxis.which) {
+              gamepad.OnControllerAxisEvent(event.caxis);
+            }
+            break;
+          }
+          assert(!"Gamepad event from unknown device");
         } break;
 
         case SDL_CONTROLLERBUTTONDOWN:
           // Fallthrough
         case SDL_CONTROLLERBUTTONUP: {
-          auto it = gamepads_.find(event.cbutton.which);
-          assert(it != gamepads_.end());
-          it->second->OnControllerButtonEvent(event.cbutton);
+          for (auto &gamepad : gamepads_) {
+            if (gamepad.GetID() == event.cbutton.which) {
+              gamepad.OnControllerButtonEvent(event.cbutton);
+            }
+            break;
+          }
+          assert(!"Gamepad event from unknown device");
         } break;
 
         case SDL_WINDOWEVENT:
@@ -124,8 +134,8 @@ VOID CXBApplication::Destroy() {
           break;
 
         default:
-          PRINTMSG(("Ignoring SDL event of type %d [0x%x]", event.type,
-                   event.type));
+          PRINTMSG(
+              ("Ignoring SDL event of type %d [0x%x]", event.type, event.type));
       }
     }
 
@@ -145,24 +155,37 @@ void CXBApplication::OnControllerAdded_(
     return;
   }
 
-  SDL_JoystickID id =
-      SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller));
-  gamepads_[id] = std::make_shared<CXBGamepad>(controller);
+  auto player_index = SDL_GameControllerGetPlayerIndex(controller);
+
+  if (player_index < 0 || player_index >= MAX_NUM_GAMEPADS) {
+    ErrorPrintSDLError("Player index %d is out of range (max %d).",
+                       player_index, MAX_NUM_GAMEPADS);
+    return;
+  }
+
+  gamepads_[player_index].LinkDevice(controller);
 }
 
 void CXBApplication::OnControllerRemapped_(
     const SDL_ControllerDeviceEvent &event) {
   PRINTMSG(("Ignoring SDL_CONTROLLERDEVICEREMAPPED event for device %d",
-           event.which));
+            event.which));
 }
 
 void CXBApplication::OnControllerRemoved_(
     const SDL_ControllerDeviceEvent &event) {
   SDL_GameController *controller =
       SDL_GameControllerFromInstanceID(event.which);
-  SDL_GameControllerClose(controller);
 
-  gamepads_.erase(event.which);
+  for (auto &gamepad : gamepads_) {
+    if (gamepad.GetID() == event.which) {
+      gamepad.UnlinkDevice();
+      return;
+    }
+  }
+
+  // Handle case where the controller was never mapped for some reason.
+  SDL_GameControllerClose(controller);
 }
 
 BOOL CXBApplication::SetBestVideoMode(CXBApplication::ColorDepth bpp,

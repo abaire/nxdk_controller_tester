@@ -11,6 +11,8 @@
 #include "XBGamepad.h"
 #include "XBRenderer.h"
 
+#define MAX_NUM_GAMEPADS 4
+
 class CXBApplication {
  public:
   static const int AnyHeight = 0x7FFF;
@@ -49,7 +51,7 @@ class CXBApplication {
   // Region of the screen that is actually viewable.
   SDL_Rect safe_area_{0, 0, 0, 0};
 
-  std::map<SDL_JoystickID, std::shared_ptr<CXBGamepad>> gamepads_;
+  CXBGamepad gamepads_[MAX_NUM_GAMEPADS];
 };
 
 #endif
